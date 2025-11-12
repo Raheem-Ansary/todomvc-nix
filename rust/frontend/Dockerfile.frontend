@@ -1,0 +1,14 @@
+# Optional: Nginx container to serve the Rust WASM frontend
+# Expects static assets prebuilt into rust/dist and rust/frontend/devhtml
+
+FROM docker.io/library/nginx:1.27-alpine
+WORKDIR /usr/share/nginx/html
+
+# Copy prebuilt assets from repository directory layout
+# - HTML template files
+# - Compiled JS/WASM under js/
+COPY rust/frontend/devhtml/ ./
+COPY rust/dist/js/ ./js/
+
+EXPOSE 80
+

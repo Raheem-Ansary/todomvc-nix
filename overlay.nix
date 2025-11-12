@@ -13,7 +13,8 @@ in
     haskellPkg = (misoPkgs.pkgs.haskell.packages.ghc865.override {
       all-cabal-hashes = misoPkgs.pkgs.fetchurl {
         url = "https://github.com/commercialhaskell/all-cabal-hashes/archive/90e9a5c0282099dd8aa5a369b2b474d0dc354ab8.tar.gz";
-        sha256 = "sha256-2bEC/2b+Fa+yCg72upOHKQtEzCbf6lYjpTN0nT23nZw=";
+        sha256 = "sha256-SDu4snEWjuZU475PERvu+iO50Mi39KVjqCeJeNvpguU=";
+
       };
     }).extend (self: super: {
       aeson = noCheck (self.callHackage "aeson" "1.4.4.0" { });

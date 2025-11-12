@@ -31,7 +31,8 @@ fn main() -> anyhow::Result<()> {
         };
         let app = crate::routes::routes(state.clone());
         // app.at("/static").serve_dir("./client/pkg/")?;
-        app.listen("127.0.0.1:8185").await?;
+        let bind_addr = env::var("BIND_ADDR").unwrap_or_else(|_| "127.0.0.1:8185".to_string());
+        app.listen(bind_addr).await?;
         Ok(())
     })
 }

@@ -13,6 +13,7 @@ pub fn routes(state: AppState)->tide::Server<AppState>{
     .allow_credentials(false);
 
     app.with(cors.clone()).at("/").all(index);
+    app.at("/health").get(|_| async { Ok("OK") });
     app.with(cors.clone()).at("/rstodos").get(api::get_todos);
     app.with(cors.clone()).at("/rstodos").delete(api::delete_todos);
     app.with(cors.clone()).at("/rstodos").post(api::post_todo);

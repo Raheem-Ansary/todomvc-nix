@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: todomvc-rust-backend
+  labels:
+    app: todomvc-rust-backend
+spec:
+  type: ClusterIP
+  selector:
+    app: todomvc-rust-backend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8185
+

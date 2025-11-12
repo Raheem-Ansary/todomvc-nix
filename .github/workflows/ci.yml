@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v27
+        with:
+          extra_nix_config: |
+            accept-flake-config = true
+
+      - name: nix develop check
+        run: nix develop --check
+
+      - name: Build Rust backend
+        run: nix build .#packages.x86_64-linux.rust-backend
+
+      - name: Build Rust frontend
+        run: nix build .#packages.x86_64-linux.rust-frontend
+
+      - name: Build Docker image via Nix (optional)
+        run: nix build .#packages.x86_64-linux.rust-backend-image
+        continue-on-error: true
+
+      - name: Push Docker image (optional)
+        if: ${{ secrets.DOCKERHUB_USERNAME && secrets.DOCKERHUB_TOKEN }}
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+          # Example: load and push the Nix-built image tarball if produced
+          if [ -e result ]; then
+            docker load < result
+            docker image ls
+            # Adjust image name/tag if needed
+            # docker push your-org/todomvc-rust-backend:latest
+          fi
+

@@ -1,0 +1,30 @@
+# Multi-stage Dockerfile for the Rust backend
+# Builder
+FROM docker.io/library/rust:1-bookworm AS builder
+WORKDIR /app
+
+# Cache deps
+COPY rust/Cargo.toml rust/Cargo.lock ./
+COPY rust/backend/Cargo.toml rust/backend/Cargo.toml
+COPY rust/common/Cargo.toml rust/common/Cargo.toml
+RUN mkdir -p rust/backend/src rust/common/src && \
+    echo "fn main(){}" > rust/backend/src/main.rs && \
+    echo "" > rust/common/src/lib.rs && \
+    cargo build -p rust-backend --release || true
+
+# Build
+COPY rust ./rust
+WORKDIR /app/rust
+ENV RUSTFLAGS="-C target-cpu=native"
+RUN cargo build -p rust-backend --release
+
+# Runtime
+FROM gcr.io/distroless/cc-debian12:nonroot
+WORKDIR /app
+ENV BIND_ADDR=0.0.0.0:8185
+ENV RUST_LOG=info
+COPY --from=builder /app/rust/target/release/rust-backend /usr/local/bin/rust-backend
+EXPOSE 8185
+USER nonroot
+ENTRYPOINT ["/usr/local/bin/rust-backend"]
+
