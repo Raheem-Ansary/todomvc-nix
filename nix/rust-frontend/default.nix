@@ -45,7 +45,7 @@ stdenv.mkDerivation {
     src = ../../rust;
   };
 
-  buildInputs = [ pkgs.nodejs-14_x yarnPkg pkgs.yarn todomvc.nix.rustOverlay pkgs.openssl pkgs.zlib pkgs.cacert ];
+  buildInputs = [ pkgs.nodejs yarnPkg pkgs.yarn pkgs.wasm-pack pkgs.rustc pkgs.cargo pkgs.openssl pkgs.zlib pkgs.cacert ];
 
   patchPhase = ''
     ln -s ${yarnPkg}/libexec/${package.name}/node_modules .
@@ -54,8 +54,7 @@ stdenv.mkDerivation {
   buildPhase = ''
     # Yarn writes cache directories etc to $HOME.
     export HOME=$PWD/yarn_home
-    export PATH=$PWD/node_modules/.bin:$PATH
-    node node_modules/wasm-pack/install.js
+    export PATH=$PWD/node_modules/.bin:${pkgs.wasm-pack}/bin:$PATH
     yarn --enable-pnp --offline build
   '';
 
