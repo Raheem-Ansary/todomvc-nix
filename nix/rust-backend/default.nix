@@ -7,9 +7,9 @@ pkgs.rustPlatform.buildRustPackage rec {
   doCheck = false;
   cargoBuildFlags = [ "-p" pname ];
 
-  # Needed to get openssl-sys to use pkgconfig.
+  # Needed to get openssl-sys to use pkg-config.
   OPENSSL_NO_VENDOR = 1;
 
-  nativeBuildInputs = with pkgs; [ zlib pkgconfig ];
-  buildInputs = with pkgs; [ openssl openssl.dev ];
+  nativeBuildInputs = with pkgs; [ pkg-config ];
+  buildInputs = with pkgs; [ openssl zlib ];
 }

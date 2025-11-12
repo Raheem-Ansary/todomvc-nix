@@ -16,7 +16,7 @@
 
   outputs = { self, nixpkgs, flake-utils, polysemy, http-media, servant, miso, servant-jsaddle }:
     {
-      overlay = import ./overlay.nix { inherit polysemy http-media servant miso servant-jsaddle; };
+      overlays.default = import ./overlay.nix { inherit polysemy http-media servant miso servant-jsaddle; };
     } // (
       flake-utils.lib.eachSystem [
         "x86_64-linux"
@@ -27,7 +27,7 @@
         let
           pkgs = import nixpkgs {
             inherit system;
-            overlays = [ self.overlay ];
+            overlays = [ self.overlays.default ];
             config = { allowBroken = true; };
           };
 
