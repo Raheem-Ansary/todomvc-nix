@@ -2,46 +2,46 @@ name: CI
 
 on:
   push:
+    branches: [ main ]
   pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      HAS_DOCKERHUB: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install Nix
         uses: cachix/install-nix-action@v27
-        with:
-          extra_nix_config: |
-            accept-flake-config = true
 
-      - name: nix develop check
-        run: nix develop --check
+      - name: Show flake
+        run: nix flake show
 
-      - name: Build Rust backend
+      - name: Build rust backend (Nix)
         run: nix build .#packages.x86_64-linux.rust-backend
 
-      - name: Build Rust frontend
-        run: nix build .#packages.x86_64-linux.rust-frontend
-
-      - name: Build Docker image via Nix (optional)
+      - name: Build Docker image via Nix (Linux only)
+        if: ${{ runner.os == 'Linux' }}
         run: nix build .#packages.x86_64-linux.rust-backend-image
-        continue-on-error: true
 
-      - name: Push Docker image (optional)
-        if: ${{ secrets.DOCKERHUB_USERNAME && secrets.DOCKERHUB_TOKEN }}
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Load image (Linux only)
+        if: ${{ runner.os == 'Linux' }}
+        run: docker load < result
+
+      - name: Docker login (only if secrets exist)
+        if: ${{ env.HAS_DOCKERHUB == 'true' && runner.os == 'Linux' }}
+        run: echo '${{ secrets.DOCKERHUB_TOKEN }}' | docker login -u '${{ secrets.DOCKERHUB_USERNAME }}' --password-stdin
+
+      - name: Push image (only if secrets exist)
+        if: ${{ env.HAS_DOCKERHUB == 'true' && runner.os == 'Linux' }}
         run: |
-          echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-          # Example: load and push the Nix-built image tarball if produced
-          if [ -e result ]; then
-            docker load < result
-            docker image ls
-            # Adjust image name/tag if needed
-            # docker push your-org/todomvc-rust-backend:latest
-          fi
+          docker images
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/todomvc-rust-backend:latest
 
