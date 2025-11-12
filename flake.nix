@@ -77,10 +77,10 @@
                 docker docker-compose
                 kubectl kustomize helm
                 postgresql
-                terraform tflint
+                opentofu tflint
               ];
               shellHook = ''
-                echo "[todomvc] Dev shell ready: git jq make rustc cargo node yarn docker k8s psql terraform"
+                echo "[todomvc] Dev shell ready: git jq make rustc cargo node yarn docker k8s psql tofu"
               '';
             };
           };
